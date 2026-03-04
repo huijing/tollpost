@@ -90,7 +90,7 @@ The JSON response contains:
 ### 1. Clone and install
 
 ```bash
-git clone <repo-url> tollpost
+git clone git@github.com:huijing/tollpost.git
 cd tollpost
 bun install
 ```
@@ -108,11 +108,11 @@ SELLER_ADDRESS=0xYOUR_SELLER_WALLET_ADDRESS
 ARTICLE_PRICE=0.01
 ```
 
-`SELLER_ADDRESS` is the wallet that receives USDC payments. You only need the public address — no private key required on the server.
+`SELLER_ADDRESS` is the wallet that receives USDC payments. You only need the public address when receiving funds.
 
 ### 3. Add your content
 
-The template ships with sample blog posts that explain how the x402 integration works — read them before replacing them. Then swap in your own content:
+The template ships with sample blog posts that explain how the x402 integration works. Replace them, preferably after you read them but if not, that's fine too. Just swap in your own content to start using the blog:
 
 - Replace the posts in `src/content/blog/` with your own MDX or Markdown files
 - Replace pages like `src/pages/about.astro` with your own
