@@ -1,0 +1,64 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1 class="heading-2">About</h1>
+			<p>
+				This is a placeholder page. Replace it with your own about content once you've set up the
+				template.
+			</p>
+
+			<h2>What is this template?</h2>
+			<p>
+				TollPost is a blog starter where humans read for free and AI agents pay per request. Every post
+				lives at two URLs: a static HTML page open to anyone in a browser, and a JSON API endpoint gated
+				behind the <a href="https://www.x402.org/">x402 payment protocol</a>. When an agent hits the
+				API, it receives a <code>402 Payment Required</code> response, signs a USDC micropayment
+				off-chain, and gets structured content back — no gas fees, no paywall for human readers.
+			</p>
+			<p>
+				It's built with <a href="https://astro.build/">Astro</a> and the
+				<a href="https://developers.circle.com/gateway">Circle x402 Batching SDK</a>. The payment
+				integration is three files. Everything else — this page, the blog posts, the site title — is
+				sample content meant to be replaced with your own.
+			</p>
+
+			<h2>What should I replace?</h2>
+			<ul>
+				<li>The blog posts in <code>src/content/blog/</code> — swap them for your own writing</li>
+				<li>This about page and any other pages in <code>src/pages/</code></li>
+				<li>The site title and description in <code>src/consts.ts</code></li>
+				<li>Your wallet address and price in <code>.env</code></li>
+			</ul>
+
+			<h2>What should I keep?</h2>
+			<ul>
+				<li><code>src/lib/x402.ts</code> — the payment logic</li>
+				<li><code>src/pages/api/posts/[slug].ts</code> — the paid API route</li>
+				<li><code>astro.config.mjs</code> — the Node adapter for SSR</li>
+			</ul>
+
+			<p>
+				The sample posts that ship with this template explain how the payment flow works. Read them
+				before you delete them:
+			</p>
+			<ul>
+				<li><a href="/blog/what-is-tollpost">What is TollPost?</a> — the dual-access model and how to get started</li>
+				<li><a href="/blog/tollpost-for-agents">How TollPost works for AI agents</a> — the 402 flow and agent client code</li>
+				<li><a href="/blog/tollpost-for-humans">What happens when you hit an x402 endpoint?</a> — what browsers see versus what agents see</li>
+			</ul>
+		</main>
+		<Footer />
+	</body>
+</html>

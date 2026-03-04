@@ -1,0 +1,78 @@
+---
+title: 'How TollPost works for AI agents'
+description: 'TollPost operates on a dual-access model. Every blog post lives at two URLs: /blog/{slug} serves free static HTML for humans, and /api/posts/{slug} serves paid JSON for machines. The payment gate only applies to the API.'
+pubDate: 'Mar 01 2026'
+heroImage: '../../assets/blog-placeholder-2.jpg'
+---
+
+TollPost operates on a dual-access model. Every blog post lives at two URLs: `/blog/{slug}` serves free static HTML for humans, and `/api/posts/{slug}` serves paid JSON for machines. The payment gate only applies to the API.
+
+## AI agent flow
+
+1. An AI agent makes a GET `/api/posts/{slug}` request via a normal HTTP call with no special headers.
+
+2. The server sees no `payment-signature` header and returns *402 Payment Required*. The response body is empty, but the `PAYMENT-REQUIRED` header contains base64-encoded JSON describing the price (e.g. 0.01 USDC), accepted networks (e.g. Base Sepolia), the seller's wallet address, and the Circle Gateway's verifying contract.
+
+3. The agent's client library (`GatewayClient`) parses those requirements, constructs an EIP-712 typed signature authorizing the USDC transfer, and retries the same request with a Payment-Signature header containing that signed payload.
+
+4. The server decodes the signature, calls `BatchFacilitatorClient.settle()` which sends it to Circle Gateway for settlement. Gateway validates the signature and queues the payment — no on-chain transaction happens at request time.
+
+5. If settlement succeeds, the server returns `200 OK` with the post content as structured JSON (title, description, date, full markdown body) plus a `PAYMENT-RESPONSE` header confirming the transaction.
+
+What makes it agent friendly is that the `GatewayClient` from Circle's SDK wraps all of this into a single `client.pay(url)` call. The agent doesn't need to understand 402 responses, EIP-712 signatures, or payment headers. It just calls `pay()` and gets JSON back. The payments are off-chain signatures settled in batches later, so there are no gas fees per request.
+
+The server-side integration with Astro involes two files:
+- `src/lib/x402.ts`, which handles three functions: build the 402 response, settle a payment, format the success header
+- `src/pages/api/posts/[slug].ts`, which checks if the request has a `payment-signature` header → if not, 402; if yes, settle → return content
+
+There is no middleware or database. The payment protocol lives entirely in HTTP headers.
+
+## How the agent consumes content
+
+If you are building an agent that consumes content from TollPost, you can use the following steps:
+
+1. Set up a wallet with USDC
+    The agent needs an EVM private key and some USDC on a supported chain (Base Sepolia for testnet). Testnet USDC is free from Circle's faucet.
+
+2. Create a GatewayClient and deposit into Gateway
+    ```ts
+    import { GatewayClient } from '@circle-fin/x402-batching/client';
+
+    const client = new GatewayClient({  
+      chain: 'baseSepolia', 
+      privateKey: '0x...',
+    });
+
+    await client.deposit('5'); // one-time: moves USDC into Gateway's escrow
+    ```
+    The deposit is the only on-chain transaction. After that, everything is off-chain signatures.
+
+3. Call `client.pay()` with the API URL
+
+    ```ts
+    const { data } = await client.pay('https://yoursite.com/api/posts/some-post');
+
+    console.log(data.title);
+    console.log(data.content);
+    ```
+
+The `pay()` method handles the entire 402 handshake internally. It makes the request, gets the 402, reads the price, signs the payment, retries, and returns the parsed JSON.
+
+Without the SDK, an agent could also do it manually: make a `GET`, parse the base64 `PAYMENT-REQUIRED` header, construct an EIP-712 signature matching the payment requirements, and retry with a `Payment-Signature` header. The SDK abstracts away the complexity of the 402 handshake.
+
+The agent gets back structured JSON that looks like this:
+
+```json
+{
+  "id": "how-tollpost-works",
+  "title": "How TollPost Works",
+  "description": "...",
+  "pubDate": "2024-06-01T00:00:00.000Z",
+  "content": "Full markdown content...",
+  "payment": {
+    "payer": "0x...",
+    "transaction": "...",
+    "network": "eip155:84532"
+  }
+}
+```

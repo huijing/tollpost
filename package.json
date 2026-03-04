@@ -1,0 +1,27 @@
+{
+  "name": "tollpost",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test:402": "bun run scripts/test-client.ts",
+    "test:pay": "bun run scripts/test-client.ts --pay",
+    "balance": "bun run scripts/withdraw.ts balance",
+    "withdraw": "bun run scripts/withdraw.ts"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "5.0.0-beta.9",
+    "@astrojs/node": "^10.0.0-beta.6",
+    "@astrojs/rss": "4.0.15-beta.4",
+    "@astrojs/sitemap": "3.7.0",
+    "@circle-fin/x402-batching": "^2.0.4",
+    "@x402/core": "^2.5.0",
+    "@x402/evm": "^2.5.0",
+    "astro": "6.0.0-beta.17",
+    "sharp": "^0.34.5",
+    "viem": "^2.46.3"
+  }
+}

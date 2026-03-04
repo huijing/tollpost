@@ -1,0 +1,30 @@
+---
+title: "What happens when you hit an x402 endpoint?"
+description: "When someone visits the x402 article endpoint from a browser (e.g. navigating to /api/posts/some-slug), here's what happens."
+pubDate: 'Mar 01 2026'
+heroImage: '../../assets/blog-placeholder-3.jpg'
+heroAlt: 'TollPost'
+---
+
+When someone visits the x402 article endpoint from a browser (e.g. navigating to `/api/posts/some-slug`), here's what happens:
+
+1. The slug is looked up. The handler fetches all blog posts and tries to find one matching the slug URL parameter. If no post matches, it returns a 404 JSON response with `{ error: 'Post not found' }`.
+
+2. No payment-signature header → 402 Payment Required. A normal browser GET request won't include a payment-signature header, so the code takes this branch:
+    ```ts
+    if (!signature) {
+      const resourceUrl = new URL(request.url).pathname;
+      return paymentRequiredResponse(SELLER_ADDRESS, ARTICLE_PRICE, resourceUrl);  
+    }
+    ```
+
+3. The 402 response `paymentRequiredResponse` returns an HTTP 402 Payment Required with an empty JSON body (`{}`). The payment details are base64-encoded into a `PAYMENT-REQUIRED` response header, describing which networks/assets are accepted (USDC on supported chains), the price, and the seller address.
+
+So in practice, a browser user will see a blank/empty JSON response with a 402 status code. The browser itself doesn't understand the x402 payment protocol. It would just display `{}` (or show an error page, depending on the browser). The `PAYMENT-REQUIRED` header is meant to be read by an x402-aware HTTP client that can:
+
+1. Parse the base64-encoded payment requirements from the header
+2. Construct and sign a payment (an EIP-712 signature authorizing a USDC transfer)
+3. Re-request the same endpoint with the signed payment in the payment-signature header
+4. Only then does the server settle the payment on-chain and return the actual post content as JSON
+
+TL;DR: A browser visit to a valid slug returns a `402` with an empty body. The content is paywalled behind the x402 micropayment protocol and isn't accessible without a compatible client.

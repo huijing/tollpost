@@ -1,0 +1,51 @@
+---
+title: 'What is TollPost?'
+description: 'TollPost is a blog template where humans read for free and AI agents pay per request.'
+pubDate: 'Mar 02 2026'
+heroImage: '../../assets/blog-placeholder-1.jpg'
+heroAlt: 'TollPost'
+---
+
+TollPost is a blog template where humans read for free and AI agents pay per request.
+
+## The Problem
+
+AI agents scrape blog content without compensation. Traditional paywalls block everyone. What if you could keep your blog open to human readers while charging machines?
+
+## The Solution
+
+TollPost serves your blog two ways:
+
+- **Static HTML pages**: Free, fast, and open to anyone with a browser
+- **JSON API endpoints**: Gated behind the x402 payment protocol, designed for programmatic access
+
+The dual-access approach (free HTML for browsers, paid JSON for agents) works on an honor system. Nothing stops an agent from scraping the free `/blog/{slug}` pages instead of paying through the API.
+
+The HTML is public, indexable, and contains the same content. An agent that can parse HTML has no technical reason to use the paid endpoint. Today's paywalled content sites all operate on the same implicit bargain: the content is technically accessible, and the gate is a social and legal boundary more than a technical one.
+
+x402 doesn't change this dynamic. It just makes the paid path *frictionless enough* that an honest agent has no reason to scrape. If `client.pay()` is a single function call that costs a cent and returns clean structured data, the calculus shifts.
+
+Scraping HTML, parsing it, handling layout changes, and risking blocks becomes the harder path. The goal isn't to make free access impossible. It's to make paid access so easy that it becomes the default for agents that are designed to pay.
+
+## The Flow
+
+When an AI agent requests content from the API, it receives a `402 Payment Required` response with a price. The agent signs a USDC payment off-chain (no gas fees), retries the request with a payment signature, and gets the content as structured JSON.
+
+1. Agent requests` /api/posts/my-article`
+2. Server responds with `402` and a price (e.g. $0.01 USDC)
+3. Agent signs a payment and retries
+4. Server verifies, settles with Circle Gateway, returns the content
+5. Payments are batched and settled on-chain later
+
+Humans visiting the same article in a browser see a normal blog page. The HTML is still free and open to all.
+
+## Built With
+
+- **[Astro](https://astro.build/)**: Static site generation with server API routes
+- **Circle x402 Batching SDK**: Gasless micropayments via Circle Gateway
+
+## Use It Yourself
+
+Clone the repo, replace the sample posts with your own, set your wallet address in `.env`, and
+deploy. Your blog is open to readers and monetized for machines. Adjust the frontmatter (title, date, description, etc.) to match whatever schema your content
+collection uses.
