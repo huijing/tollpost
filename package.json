@@ -14,14 +14,14 @@
   },
   "dependencies": {
     "@astrojs/mdx": "5.0.0",
-    "@astrojs/node": "^10.0.0",
+    "@astrojs/node": "^10.0.1",
     "@astrojs/rss": "4.0.17",
     "@astrojs/sitemap": "3.7.1",
     "@circle-fin/x402-batching": "^2.0.4",
     "@x402/core": "^2.6.0",
     "@x402/evm": "^2.6.0",
-    "astro": "6.0.2",
+    "astro": "6.0.4",
     "sharp": "^0.34.5",
-    "viem": "^2.47.1"
+    "viem": "^2.47.4"
   }
 }
